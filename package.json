@@ -1,0 +1,16 @@
+{
+  "name": "dudewheresmycar-server",
+  "main": "server.js",
+  "dependencies": {
+    "bcrypt-nodejs": "latest",
+    "body-parser": "~1.4.2",
+    "express": "~4.5.1",
+    "fs": "latest",
+    "jsonwebtoken": "latest",
+    "method-override": "~2.0.2",
+    "mongoose": "~3.8.0",
+    "serve-static": "latest",
+    "cors": "latest",
+    "lodash": "latest"
+  }
+}

@@ -1,74 +1,207 @@
-// server.js
+var express  = require('express'),
+    mongoose = require('mongoose'),
+    bodyParser = require('body-parser')
+    config = require('./config.js'),
+	morgan = require('morgan'),
+	bcrypt = require('bcrypt-nodejs'),
+	jwt = require('jsonwebtoken'),
+	cors = require('cors');
 
-// modules =================================================
-var express        = require('express');
-var app            = express();
-var bodyParser     = require('body-parser');
-var methodOverride = require('method-override');
-var bcrypt 		   = require('bcrypt-nodejs');
-var jwt 		   = require('jsonwebtoken');
-var serveStatic	   = require('serve-static');
-var mongoose 	   = require('mongoose');
-var cors 		   = require('cors');
 
-// configuration ===========================================
-    
-// config files
-var db = require('./config/db');
-
-// set our port
-var port = process.env.PORT || 8005; 
-
-// connect to our mongoDB database 
-// (uncomment after you enter in your own credentials in config/db.js)
-// mongoose.connect(db.url); 
-
-// get all data/stuff of the body (POST) parameters
-// parse application/json 
-app.use(bodyParser.json()); 
-
-// parse application/vnd.api+json as json
-app.use(bodyParser.json({ type: 'application/vnd.api+json' })); 
-
-// parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: true })); 
-
-app.use( bodyParser.json({limit: '50mb'}) );
-app.use(bodyParser.urlencoded({
-  limit: '50mb',
-  extended: true,
-  parameterLimit:50000
-}));
-
-// override with the X-HTTP-Method-Override header in the request. simulate DELETE/PUT
-app.use(methodOverride('X-HTTP-Method-Override')); 
-
-// set the static files location /public/img will be /img for users
-app.use(express.static(__dirname + '/public')); 
-//app.use(serveStatic('public/ftp', {'index': ['index.html']}))
-
-app.use(cors());
+var server = express();
+server.use(bodyParser.urlencoded({ extended: true, limit: '5mb' }));
+server.use(bodyParser.json({ limit: '5mb'}));
+//server.use(bodyParser.urlencoded({ limit: '5mb'}));
+server.use(morgan('dev')); // LOGGER
 
 // Connect to the hosted mongo DB instance
-mongoose.connect( db.url, function (error) {
+mongoose.connect( config.database.connectionURI, function (error) {
     if (error) console.error(error);
     else console.log('mongo connected');
 });
 
+// lets load the mod els
+var Car        = require('./car');
+var User     = require('./user');
+var Activity = require('./activity');    
 
-// routes ==================================================
-require('./routes')(app); // configure our routes
+// Static Routes
+var staticRouter = express.Router();
 
-// route to handle creating goes here (app.post)
-// route to handle delete goes here (app.delete)
+server.use(function(req, res, next) {
+	res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
 
-// start app ===============================================
-// startup our app at http://localhost:8080
-app.listen(port);               
+    next();
+});
 
-// shoutout to the user                     
-console.log('Magic happens on port ' + port);
-console.log('Lets get ready to rock');
+server.use(cors());
 
-// expose app           
-exports = module.exports = app;
+server.get('/', function(req, res) {
+	
+    res.send('Hello! The API is at http://localhost:' + config.port + '/api');
+});
+
+// API routes
+var apiRouter = express.Router();              // get an instance of the express Router
+
+apiRouter.get('/', function(req, res) {
+
+    res.json({ message: 'hooray! welcome to our api!' });   
+});
+
+// Create a new User
+apiRouter.post('/users', function(req, res){
+	// create a new user
+	var newUser = Users({
+	  name: req.body.name,
+	  email: req.body.email,
+	  password: req.body.password,
+	  admin: req.body.admin
+	});
+
+	//we only want to save the encrypted user's password
+	newUser.password = bcrypt.hashSync(newUser.password);
+
+	// save the user
+	newUser.save(function(err) {
+		if (err) {
+			return res.json({ 
+				success: false, 
+				message: 'error saving user: ' + err
+			});
+		} 
+
+	  	console.log('User created!');
+
+		// now let's create a token for them!
+		var token = jwt.sign(newUser, config.auth.secret, {
+			expiresIn: '24h' 
+		});
+
+		res.json({ 
+			success: true, 
+			message: 'user created successfully!',
+			token: token
+		});
+	});
+});
+//Authenticate a userx
+apiRouter.post('/authenticate', function(req, res){
+	//debugging
+	console.log('email: ' + req.body.email);
+	console.log('password: ' + req.body.password);
+
+	//get the user with the name passed in
+	Users.findOne(
+		{ email: req.body.email},
+		function(err, user){
+			if (err){
+				res.json({ 
+					message: 'Error occured: ' + err,
+					success: false
+				});
+			}
+
+			if (!user) {
+				res.json({ 
+					message: 'User doesnt exist',
+					success: false
+				});	
+			} else {
+			
+				//cool. we have a user found, but now we need to check their password
+				if( bcrypt.compareSync(req.body.password, user.password)){
+					//authenticate has worked, now we need to return a JWT
+
+					var token = jwt.sign(user, config.auth.secret, {
+						expiresIn: '24h' 
+					});
+
+					res.json({
+						message: 'Welcome!',
+						success: true,
+						jwt: token,
+						user: user
+					});
+
+				} else {
+					//wrong password
+					res.json({ 
+						message: 'Incorrect password.', 
+						success: false
+					});
+				}
+			}
+		});
+});
+
+// Everything past this point will require an authenticated user
+apiRouter.use( function(req, res, next){
+	var token = req.body.token ||
+		req.query.token ||
+		req.headers['x-access-token'];
+
+	//try to decode the token if we have one
+	if (token) {
+		jwt.verify(token, config.auth.secret, function(err, decoded) {
+			if (err) {
+				return res.json({ 
+					message: 'Failed to authenticate token.',
+					success: false
+				});
+			} else {
+				// if everything is chill, then save the decoded token in the request
+				// so we can use in the following routes
+				req.decoded = decoded;
+				next();
+			}
+		});
+	} else {
+
+		console.log('failed in authenticate middleware');
+
+		// if there is no token then we need to return an error
+		return res.status(403).send({
+			message: 'No token provided',
+			success: false
+		});
+	}
+});
+
+// user routes
+// get all users
+apiRouter.get('/users', function(req, res){
+
+	//let's display all the users
+	Users.find({}, function(err, users) {
+		if (err) throw err;
+
+		//return the array in json form
+		res.json(users);
+	});
+});
+// get one user by their id
+apiRouter.get('/users/:user_id', function(req, res){
+	Users.findById(req.params.user_id, function(err, user){
+
+		if (err) {
+			return res.json({ message: 'No user exists for this ID'});
+		}
+
+		res.json(user);
+	});
+});
+
+
+
+// register the routes to the /api directory
+server.use('/api', apiRouter);
+server.use('/', staticRouter);
+
+server.listen(config.port || 9804, function () {
+    console.log("Server started @ ", config.port || 9804);
+});
+
+

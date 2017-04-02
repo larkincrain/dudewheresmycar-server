@@ -21,9 +21,9 @@ mongoose.connect( config.database.connectionURI, function (error) {
 });
 
 // lets load the mod els
-var Car        = require('./car');
-var User     = require('./user');
-var Activity = require('./activity');    
+var Car        	= require('./car');
+var User     	= require('./user');
+var Activity 	= require('./activity');    
 
 // Static Routes
 var staticRouter = express.Router();
@@ -54,11 +54,12 @@ apiRouter.get('/', function(req, res) {
 // Create a new User
 apiRouter.post('/users', function(req, res){
 	// create a new user
-	var newUser = Users({
+	var newUser = User({
 	  name: req.body.name,
 	  email: req.body.email,
 	  password: req.body.password,
-	  admin: req.body.admin
+	  profile_picture: req.body.profile_picture,
+	  admin: req.body.admin,
 	});
 
 	//we only want to save the encrypted user's password
@@ -94,7 +95,7 @@ apiRouter.post('/authenticate', function(req, res){
 	console.log('password: ' + req.body.password);
 
 	//get the user with the name passed in
-	Users.findOne(
+	User.findOne(
 		{ email: req.body.email},
 		function(err, user){
 			if (err){
@@ -175,7 +176,7 @@ apiRouter.use( function(req, res, next){
 apiRouter.get('/users', function(req, res){
 
 	//let's display all the users
-	Users.find({}, function(err, users) {
+	User.find({}, function(err, users) {
 		if (err) throw err;
 
 		//return the array in json form
@@ -184,7 +185,7 @@ apiRouter.get('/users', function(req, res){
 });
 // get one user by their id
 apiRouter.get('/users/:user_id', function(req, res){
-	Users.findById(req.params.user_id, function(err, user){
+	User.findById(req.params.user_id, function(err, user){
 
 		if (err) {
 			return res.json({ message: 'No user exists for this ID'});
@@ -194,6 +195,45 @@ apiRouter.get('/users/:user_id', function(req, res){
 	});
 });
 
+// Car routes!!!! :)
+// create a new Car
+apiRouter.post('/cars', function(req, res) { 
+	// create a new user
+	var newCar = Car({
+		name: req.body.name,
+		profile_picture: req.body.profile_picture,
+	  	seats: req.body.seats,
+	  	description: req.body.description
+	});
+
+	// save the user
+	newCar.save(function(err) {
+		if (err) {
+			return res.json({ 
+				success: false, 
+				message: 'Error saving car: ' + err
+			});
+		} 
+
+	  	console.log('Car created!');
+
+		res.json({ 
+			success: true, 
+			message: 'Car created successfully!',
+		});
+	});
+});
+
+// get all cars
+apiRouter.get('/cars', function(req, res) { 
+	//let's display all the users
+	Car.find({}, function(err, cars) {
+		if (err) throw err;
+
+		//return the array in json form
+		res.json(cars);
+	});
+});
 
 
 // register the routes to the /api directory

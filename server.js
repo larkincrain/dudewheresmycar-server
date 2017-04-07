@@ -145,6 +145,8 @@ apiRouter.use( function(req, res, next){
 		req.query.token ||
 		req.headers['x-access-token'];
 
+	console.log('request');
+
 	//try to decode the token if we have one
 	if (token) {
 		jwt.verify(token, config.auth.secret, function(err, decoded) {

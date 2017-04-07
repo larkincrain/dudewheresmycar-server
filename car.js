@@ -8,9 +8,9 @@ module.exports = mongoose.model('Car', {
     name : {type : String, default: ''},
     type : {type : String, default: ''},
 
-    seats : {type : Number, default: 6 },
     description : {type : String, defaults: ''},
-    profile_picture : {type: String, default: ''}, 
+    seats : {type : Number, default: 6 },
+    profile_picture : {type: String, default: ''},
     
     booking : {
         previous : { type : mongoose.Schema.Types.ObjectId, ref : 'Activity' },

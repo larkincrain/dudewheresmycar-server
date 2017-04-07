@@ -7,8 +7,8 @@ var mongoose = require('mongoose');
 module.exports = mongoose.model('Car', {
     name : {type : String, default: ''},
     type : {type : String, default: ''},
-    
-    // seats : {type : Number, default: 6 },
+
+    seats : {type : Number, default: 6 },
     description : {type : String, defaults: ''},
     profile_picture : {type: String, default: ''}, 
     

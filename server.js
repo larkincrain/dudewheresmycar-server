@@ -88,6 +88,7 @@ apiRouter.post('/users', function(req, res){
 		});
 	});
 });
+
 //Authenticate a userx
 apiRouter.post('/authenticate', function(req, res){
 	//debugging
@@ -183,6 +184,7 @@ apiRouter.get('/users', function(req, res){
 		res.json(users);
 	});
 });
+
 // get one user by their id
 apiRouter.get('/users/:user_id', function(req, res){
 	User.findById(req.params.user_id, function(err, user){
@@ -226,7 +228,7 @@ apiRouter.post('/cars', function(req, res) {
 
 // get all cars
 apiRouter.get('/cars', function(req, res) { 
-	//let's display all the users
+	//let's display all the cars
 	Car.find({}, function(err, cars) {
 		if (err) throw err;
 
@@ -234,6 +236,19 @@ apiRouter.get('/cars', function(req, res) {
 		res.json(cars);
 	});
 });
+
+// get a particular car
+apiRouter.get('/car/:car_id', function(req, res) {
+	//let's get a particular car
+	Car.findById(req.params.car_id, function(err, car){
+		if (err) {
+			return res.json({ message: 'No car exists for this ID'});
+		}
+
+		res.json(car);
+	});	
+});
+
 
 
 // register the routes to the /api directory

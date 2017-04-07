@@ -6,12 +6,14 @@ var mongoose = require('mongoose');
 // module.exports allows us to pass this to other files when it is called
 module.exports = mongoose.model('Activity', {
     
-	checked_out_by : {type : mongoose.Schema.Types.ObjectId, ref: 'User'},
-	checked_out_time : {type : Date},
-	expected_return_time : {type : Date},
-	checked_in_time : {type : Date},
+	user : {type : mongoose.Schema.Types.ObjectId, ref: 'User'},
+	car : {type : mongoose.Schema.Types.ObjectId, ref: 'Car'},
 
-	passengers : [{type : mongoose.Schema.Types.ObjectId, ref: 'User'}],
+	check_out_time : {type : Date},
+	check_in_time_expected : {type : Date},
+	check_in_time : {type : Date},
+
+	// passengers : [{type : mongoose.Schema.Types.ObjectId, ref: 'User'}],
 	message : {type : String, default: ''}
 	
 });

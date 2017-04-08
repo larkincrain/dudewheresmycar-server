@@ -252,7 +252,7 @@ apiRouter.get('/cars/:car_id', function(req, res) {
 			return res.json({ message: 'No car exists for this ID'});
 		}
 
-		// lets also get all teh bookings for the previous day onward
+		// lets also get all the bookings for the previous day onward
 		Activity.find({
 			car : req.params.car_id
 		}, function(err, activities) {
@@ -271,8 +271,6 @@ apiRouter.get('/cars/:car_id', function(req, res) {
 				filteredActivities : filteredActivities
 			});
 		});
-
-		//	res.json(car);
 	});	
 });
 
@@ -281,7 +279,7 @@ apiRouter.get('/cars/:car_id', function(req, res) {
 //create a new activity
 apiRouter.post('/activities', function(req, res) { 
 	
-	//get the user
+	//get the users
 	User.find({ email : req.body.email }, function(err, users) {
 		if (err) throw err;
 
@@ -289,29 +287,71 @@ apiRouter.post('/activities', function(req, res) {
 			return res.json({ message: 'Multiple users exists for this email'});
 		}
 
-		// create a new activity
-		var newActivity = Activity({
-			user : users[0].userId,
-			car : req.body.carId,
-			check_out_time : req.body.checkOutTime,
-			check_in_time_expected : req.body.checkInTimeExpected,
-			message : req.body.message
-		});
+		//get the activities
+		Activity.find({ car : req.body.carId }, function(err, activities) {
+			var overlappingActivities = [];
+			
+			var proposedCheckOutTime = moment(req.body.checkOutTime);
+			var proposedCheckInTimeExpected = moment(req.body.checkInTimeExpected);
 
-		// save the activity
-		newActivity.save(function(err) {
-			if (err) {
-				return res.json({ 
-					success: false, 
-					message: 'Error saving activity: ' + err
-				});
-			} 
+			var overlappingActivityError = "";
 
-		  	console.log('Activity created!');
+			activities.forEach(function(activity) {
+				var existingCheckOutTime = activity.check_out_time;
+				var existingCheckInTime = activity.check_in_time == null ? activity.check_in_time_expected : activity.check_in_time;
 
-			return res.json({ 
-				success: true, 
-				message: 'Activity created successfully!',
+				//check out time & check in time range validation
+				if (proposedCheckOutTime.valueOf() >= existingCheckOutTime.getTime() &&
+					proposedCheckInTimeExpected.valueOf() <= existingCheckInTime.getTime())	{
+					overlappingActivityError = 'Overlapping CheckOut & CheckIn Time!';
+				}
+
+				//check out time validation
+				if (proposedCheckOutTime.valueOf() >= existingCheckOutTime.getTime() &&
+					proposedCheckOutTime.valueOf() <= existingCheckInTime.getTime()){
+					overlappingActivityError = 'Overlapping CheckOut Time!';
+				}
+
+				//check in time validation
+				if (proposedCheckInTimeExpected.valueOf() >= existingCheckOutTime.getTime() &&
+					proposedCheckInTimeExpected.valueOf() <= existingCheckInTime.getTime())	{
+					overlappingActivityError = 'Overlapping CheckIn Time!';
+				}
+			});
+
+			if(overlappingActivityError.length > 0){
+				return res.json({
+						success: false,
+						message: overlappingActivityError
+					});
+			}
+
+			//we're valid!
+
+			// create a new activity
+			var newActivity = Activity({
+				user : users[0].userId,
+				car : req.body.carId,
+				check_out_time : req.body.checkOutTime,
+				check_in_time_expected : req.body.checkInTimeExpected,
+				message : req.body.message
+			});
+
+			// save the activity
+			newActivity.save(function(err) {
+				if (err) {
+					return res.json({ 
+						success: false, 
+						message: 'Error saving activity: ' + err
+					});
+				} else {
+				  	console.log('Activity created!');
+
+					return res.json({ 
+						success: true, 
+						message: 'Activity created successfully!',
+					});
+				}
 			});
 		});
 	});

@@ -14,6 +14,9 @@ server.use(bodyParser.json({ limit: '5mb'}));
 //server.use(bodyParser.urlencoded({ limit: '5mb'}));
 server.use(morgan('dev')); // LOGGER
 
+console.log('config info');
+console.log(config.server);
+
 // connect to the hosted mongo db instance
 mongoose.connect( config.database.connectionURI, function (error) {
     if (error) console.error(error);
@@ -99,7 +102,7 @@ apiRouter.post('/authenticate', function(req, res){
 	console.log('password: ' + req.body.password);
 
 	//get the user with the name passed in
-	User.findOne({ email: req.body.email},
+	User.findOne({ email: req.body.email },
 		function(err, user){
 			if (err){
 				res.json({ 
@@ -113,8 +116,10 @@ apiRouter.post('/authenticate', function(req, res){
 					message: 'User doesnt exist',
 					success: false
 				});	
-			} else {
-			
+			} else {			
+				console.log('user exists');
+				console.log(user.email);
+
 				//cool. we have a user found, but now we need to check their password
 				if(bcrypt.compareSync(req.body.password, user.password)){
 					
@@ -122,6 +127,9 @@ apiRouter.post('/authenticate', function(req, res){
 					var token = jwt.sign(user, config.auth.secret, {
 						expiresIn: '24h' 
 					});
+
+					console.log('token');
+					console.log(token);
 
 					res.json({
 						message: 'Welcome!',
@@ -478,6 +486,7 @@ apiRouter.post('/activities/delete/:activity_id', function(req, res) {
 			});
 		}
 	});
+});
 
 // register the routes to the /api directory
 server.use('/api', apiRouter);

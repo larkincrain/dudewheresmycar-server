@@ -51,6 +51,8 @@ apiRouter.get('/', function(req, res) {
     res.json({ message: 'hooray! welcome to our api!' });   
 });
 
+//users
+
 // Create a new User
 apiRouter.post('/users', function(req, res){
 	// create a new user
@@ -199,6 +201,8 @@ apiRouter.get('/users/:user_id', function(req, res){
 	});
 });
 
+//cars
+
 // Car routes!!!! :)
 // create a new Car
 apiRouter.post('/cars', function(req, res) { 
@@ -240,7 +244,7 @@ apiRouter.get('/cars', function(req, res) {
 });
 
 // get a particular car
-apiRouter.get('/car/:car_id', function(req, res) {
+apiRouter.get('/cars/:car_id', function(req, res) {
 	//let's get a particular car
 	Car.findById(req.params.car_id, function(err, car){
 		if (err) {
@@ -251,7 +255,64 @@ apiRouter.get('/car/:car_id', function(req, res) {
 	});	
 });
 
+//activities
 
+//create a new activity
+apiRouter.post('/activities', function(req, res) { 
+	// create a new activity
+	var newActivity = Activity({
+		user : req.body.userId,
+		car : req.body.carId,
+		check_out_time : req.body.checkOutTime,
+		check_in_time_expected : req.body.checkInTimeExpected,
+		message : req.body.message
+	});
+
+	// save the activity
+	newActivity.save(function(err) {
+		if (err) {
+			return res.json({ 
+				success: false, 
+				message: 'Error saving activity: ' + err
+			});
+		} 
+
+	  	console.log('Activity created!');
+
+		res.json({ 
+			success: true, 
+			message: 'Activity created successfully!',
+		});
+	});
+});
+
+// get all the activities
+apiRouter.get('/activities', function(req, res) { 
+	//let's display all the activities
+	Activity.find({}, function(err, activities) {
+		if (err) throw err;
+
+		//return the array in json form
+		res.json(activities);
+	});
+
+	//todo populate user & car?
+});
+
+// get all activities for a particular car
+apiRouter.get('/activities/:car_id', function(req, res) { 
+	
+	console.log('got a request for activities from  a car');
+	console.log(req.params.car_id);
+
+	//let's display all the activities
+	Activity.find({ car : req.params.car_id }, function(err, activities) {
+		if (err) throw err;
+
+		//return the array in json form
+		res.json(activities);
+	});
+});
 
 // register the routes to the /api directory
 server.use('/api', apiRouter);

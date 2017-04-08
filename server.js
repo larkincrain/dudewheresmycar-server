@@ -5,7 +5,8 @@ var express  = require('express'),
 	morgan = require('morgan'),
 	bcrypt = require('bcrypt-nodejs'),
 	jwt = require('jsonwebtoken'),
-	cors = require('cors');
+	cors = require('cors'),
+	moment = require('moment');
 
 
 var server = express();
@@ -256,14 +257,18 @@ apiRouter.get('/cars/:car_id', function(req, res) {
 			car : req.params.car_id
 		}, function(err, activities) {
 			var filteredActivities = [];
+			var twoDaysAgo = moment(req.query.date).subtract(2, 'days');
 
 			activities.forEach(function(activity) {
-				
+				if (activity.check_out_time.getTime() > twoDaysAgo.valueOf() || 
+					// TODO activity.check_in_time.getTime() > twoDaysAgo.valueOf() ||
+					activity.check_in_time_expected.getTime() > twoDaysAgo.valueOf())
+					filteredActivities[filteredActivities.length] = activity;
 			});
 
 			res.json({
 				car: car,
-				activities : filteredActivities
+				filteredActivities : filteredActivities
 			});
 		});
 

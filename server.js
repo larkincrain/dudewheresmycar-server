@@ -251,7 +251,23 @@ apiRouter.get('/cars/:car_id', function(req, res) {
 			return res.json({ message: 'No car exists for this ID'});
 		}
 
-		res.json(car);
+		// lets also get all teh bookings for the previous day onward
+		Activity.find({
+			car : req.params.car_id
+		}, function(err, activities) {
+			var filteredActivities = [];
+
+			activities.forEach(function(activity) {
+				
+			});
+
+			res.json({
+				car: car,
+				activities : filteredActivities
+			});
+		});
+
+		//	res.json(car);
 	});	
 });
 

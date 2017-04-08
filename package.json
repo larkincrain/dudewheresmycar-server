@@ -4,14 +4,15 @@
   "dependencies": {
     "bcrypt-nodejs": "latest",
     "body-parser": "~1.4.2",
+    "cors": "latest",
     "express": "~4.5.1",
     "fs": "latest",
     "jsonwebtoken": "latest",
-    "method-override": "~2.0.2",
-    "mongoose": "~3.8.0",
-    "serve-static": "latest",
-    "cors": "latest",
     "lodash": "latest",
-    "morgan": "latest" 
+    "method-override": "~2.0.2",
+    "moment": "^2.18.1",
+    "mongoose": "~3.8.0",
+    "morgan": "latest",
+    "serve-static": "latest"
   }
 }

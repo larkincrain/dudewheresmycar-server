@@ -259,29 +259,39 @@ apiRouter.get('/cars/:car_id', function(req, res) {
 
 //create a new activity
 apiRouter.post('/activities', function(req, res) { 
-	// create a new activity
-	var newActivity = Activity({
-		user : req.body.userId,
-		car : req.body.carId,
-		check_out_time : req.body.checkOutTime,
-		check_in_time_expected : req.body.checkInTimeExpected,
-		message : req.body.message
-	});
+	
+	//get the user
+	User.find({ email : req.body.email }, function(err, users) {
+		if (err) throw err;
 
-	// save the activity
-	newActivity.save(function(err) {
-		if (err) {
+		if(!users || users.length != 1) {
+			return res.json({ message: 'Multiple users exists for this email'});
+		}
+
+		// create a new activity
+		var newActivity = Activity({
+			user : users[0].userId,
+			car : req.body.carId,
+			check_out_time : req.body.checkOutTime,
+			check_in_time_expected : req.body.checkInTimeExpected,
+			message : req.body.message
+		});
+
+		// save the activity
+		newActivity.save(function(err) {
+			if (err) {
+				return res.json({ 
+					success: false, 
+					message: 'Error saving activity: ' + err
+				});
+			} 
+
+		  	console.log('Activity created!');
+
 			return res.json({ 
-				success: false, 
-				message: 'Error saving activity: ' + err
+				success: true, 
+				message: 'Activity created successfully!',
 			});
-		} 
-
-	  	console.log('Activity created!');
-
-		res.json({ 
-			success: true, 
-			message: 'Activity created successfully!',
 		});
 	});
 });

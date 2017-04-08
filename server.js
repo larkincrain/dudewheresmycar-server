@@ -8,25 +8,24 @@ var express  = require('express'),
 	cors = require('cors'),
 	moment = require('moment');
 
-
 var server = express();
 server.use(bodyParser.urlencoded({ extended: true, limit: '5mb' }));
 server.use(bodyParser.json({ limit: '5mb'}));
 //server.use(bodyParser.urlencoded({ limit: '5mb'}));
 server.use(morgan('dev')); // LOGGER
 
-// Connect to the hosted mongo DB instance
+// connect to the hosted mongo db instance
 mongoose.connect( config.database.connectionURI, function (error) {
     if (error) console.error(error);
     else console.log('mongo connected');
 });
 
-// lets load the mod els
+// lets load the models
 var Car        	= require('./car');
 var User     	= require('./user');
 var Activity 	= require('./activity');    
 
-// Static Routes
+// static routes
 var staticRouter = express.Router();
 
 server.use(function(req, res, next) {
@@ -44,7 +43,7 @@ server.get('/', function(req, res) {
     res.send('Hello! The API is at http://localhost:' + config.port + '/api');
 });
 
-// API routes
+// api routes
 var apiRouter = express.Router();              // get an instance of the express Router
 
 apiRouter.get('/', function(req, res) {
@@ -52,9 +51,9 @@ apiRouter.get('/', function(req, res) {
     res.json({ message: 'hooray! welcome to our api!' });   
 });
 
-//users
+// user routes
 
-// Create a new User
+// create a new user
 apiRouter.post('/users', function(req, res){
 	// create a new user
 	var newUser = User({
@@ -73,7 +72,7 @@ apiRouter.post('/users', function(req, res){
 		if (err) {
 			return res.json({ 
 				success: false, 
-				message: 'error saving user: ' + err
+				message: 'Error saving user: ' + err
 			});
 		} 
 
@@ -81,26 +80,26 @@ apiRouter.post('/users', function(req, res){
 
 		// now let's create a token for them!
 		var token = jwt.sign(newUser, config.auth.secret, {
-			expiresIn: '24h' 
+			expiresIn: '24h'
 		});
 
 		res.json({ 
 			success: true, 
-			message: 'user created successfully!',
+			message: 'User created successfully!',
 			token: token
 		});
 	});
 });
 
-//Authenticate a userx
+// authenticate a user
 apiRouter.post('/authenticate', function(req, res){
+	
 	//debugging
 	console.log('email: ' + req.body.email);
 	console.log('password: ' + req.body.password);
 
 	//get the user with the name passed in
-	User.findOne(
-		{ email: req.body.email},
+	User.findOne({ email: req.body.email},
 		function(err, user){
 			if (err){
 				res.json({ 
@@ -117,9 +116,9 @@ apiRouter.post('/authenticate', function(req, res){
 			} else {
 			
 				//cool. we have a user found, but now we need to check their password
-				if( bcrypt.compareSync(req.body.password, user.password)){
+				if(bcrypt.compareSync(req.body.password, user.password)){
+					
 					//authenticate has worked, now we need to return a JWT
-
 					var token = jwt.sign(user, config.auth.secret, {
 						expiresIn: '24h' 
 					});
@@ -142,7 +141,8 @@ apiRouter.post('/authenticate', function(req, res){
 		});
 });
 
-// Everything past this point will require an authenticated user
+// IMPORTANT! everything past this point will require an authenticated user
+
 apiRouter.use( function(req, res, next){
 	var token = req.body.token ||
 		req.query.token ||
@@ -167,7 +167,7 @@ apiRouter.use( function(req, res, next){
 		});
 	} else {
 
-		console.log('failed in authenticate middleware');
+		console.log('Failed in authenticate middleware');
 
 		// if there is no token then we need to return an error
 		return res.status(403).send({
@@ -177,7 +177,6 @@ apiRouter.use( function(req, res, next){
 	}
 });
 
-// user routes
 // get all users
 apiRouter.get('/users', function(req, res){
 
@@ -190,7 +189,7 @@ apiRouter.get('/users', function(req, res){
 	});
 });
 
-// get one user by their id
+// get user by id
 apiRouter.get('/users/:user_id', function(req, res){
 	User.findById(req.params.user_id, function(err, user){
 
@@ -202,10 +201,9 @@ apiRouter.get('/users/:user_id', function(req, res){
 	});
 });
 
-//cars
+//car routes
 
-// Car routes!!!! :)
-// create a new Car
+// create a new car
 apiRouter.post('/cars', function(req, res) { 
 	// create a new user
 	var newCar = Car({
@@ -244,7 +242,7 @@ apiRouter.get('/cars', function(req, res) {
 	});
 });
 
-// get a particular car
+// get a car by id
 apiRouter.get('/cars/:car_id', function(req, res) {
 	//let's get a particular car
 	Car.findById(req.params.car_id, function(err, car){
@@ -274,9 +272,9 @@ apiRouter.get('/cars/:car_id', function(req, res) {
 	});	
 });
 
-//activities
+// activity routes
 
-//create a new activity
+// create a new activity
 apiRouter.post('/activities', function(req, res) { 
 	
 	//get the users
@@ -284,7 +282,7 @@ apiRouter.post('/activities', function(req, res) {
 		if (err) throw err;
 
 		if(!users || users.length != 1) {
-			return res.json({ message: 'Multiple users exists for this email'});
+			return res.json({ message: 'Multiple users exist for this email'});
 		}
 
 		//get the activities
@@ -303,19 +301,19 @@ apiRouter.post('/activities', function(req, res) {
 				//check out time & check in time range validation
 				if (proposedCheckOutTime.valueOf() >= existingCheckOutTime.getTime() &&
 					proposedCheckInTimeExpected.valueOf() <= existingCheckInTime.getTime())	{
-					overlappingActivityError = 'Overlapping CheckOut & CheckIn Time!';
+					overlappingActivityError = 'Conflicting CheckOut & CheckIn Time!';
 				}
 
 				//check out time validation
 				if (proposedCheckOutTime.valueOf() >= existingCheckOutTime.getTime() &&
 					proposedCheckOutTime.valueOf() <= existingCheckInTime.getTime()){
-					overlappingActivityError = 'Overlapping CheckOut Time!';
+					overlappingActivityError = 'Conflicting CheckOut Time!';
 				}
 
 				//check in time validation
 				if (proposedCheckInTimeExpected.valueOf() >= existingCheckOutTime.getTime() &&
 					proposedCheckInTimeExpected.valueOf() <= existingCheckInTime.getTime())	{
-					overlappingActivityError = 'Overlapping CheckIn Time!';
+					overlappingActivityError = 'Conflicting CheckIn Time!';
 				}
 			});
 
@@ -357,7 +355,7 @@ apiRouter.post('/activities', function(req, res) {
 	});
 });
 
-// get all the activities
+// get all activities
 apiRouter.get('/activities', function(req, res) { 
 	//let's display all the activities
 	Activity.find({}, function(err, activities) {
@@ -370,7 +368,7 @@ apiRouter.get('/activities', function(req, res) {
 	//todo populate user & car?
 });
 
-// get all activities for a particular car
+// get activities by car id
 apiRouter.get('/activities/:car_id', function(req, res) { 
 	
 	console.log('got a request for activities from  a car');

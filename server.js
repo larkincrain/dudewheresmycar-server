@@ -202,6 +202,22 @@ apiRouter.get('/users/:user_id', function(req, res){
 	});
 });
 
+// get one user by their email
+apiRouter.get('/users/email/:email', function(req, res){
+	console.log(req.params.email);
+
+	User.find(
+	{ email : req.params.email }, 
+	function(err, user){
+
+		if (err) {
+			return res.json({ message: 'No user exists for this email'});
+		}
+
+		res.json(user);
+	});
+});
+
 //cars
 
 // Car routes!!!! :)

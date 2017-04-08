@@ -7,6 +7,7 @@ var mongoose = require('mongoose');
 module.exports = mongoose.model('User', {
     email: { type : String, default: '' },
     password: { type: String, default: ''},
+    phonenumber: { type: String, default: ''},
     
     date_created: { type: Date, default: Date.now},
     profile_picture : { type: String, default: ''},

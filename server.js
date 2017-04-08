@@ -217,7 +217,7 @@ apiRouter.get('/users/email/:email', function(req, res){
 	});
 });
 
-//update the user
+// update the user
 apiRouter.post('/users/update', function(req, res) {
 	console.log(req.body.email)
 	console.log(req.body.name)
@@ -247,6 +247,7 @@ apiRouter.post('/users/update', function(req, res) {
 		}
 	});
 });
+
 //car routes
 
 // create a new car
@@ -296,7 +297,7 @@ apiRouter.get('/cars/:car_id', function(req, res) {
 			return res.json({ message: 'No car exists for this ID'});
 		}
 
-		// lets also get all the bookings for the previous day onward
+		// lets also get all the car activities from yesterday to infinite
 		Activity.find({
 			car : req.params.car_id
 		}, function(err, activities) {
@@ -331,7 +332,7 @@ apiRouter.post('/activities', function(req, res) {
 			return res.json({ message: 'Multiple users exist for this email'});
 		}
 
-		//get the activities
+		// get the activities by car id
 		Activity.find({ car : req.body.carId }, function(err, activities) {
 			var overlappingActivities = [];
 			
@@ -417,7 +418,7 @@ apiRouter.get('/activities', function(req, res) {
 // get activities by car id
 apiRouter.get('/activities/:car_id', function(req, res) { 
 	
-	console.log('got a request for activities from  a car');
+	console.log('got a get request for car activities');
 	console.log(req.params.car_id);
 
 	//let's display all the activities
@@ -429,6 +430,55 @@ apiRouter.get('/activities/:car_id', function(req, res) {
 	});
 });
 
+// update activity by activity id
+apiRouter.post('/activities/update/:activity_id', function(req, res) { 
+	
+	console.log('got an update request for a car activity');
+	console.log(req.body.activityId);
+	console.log(req.body.checkInTime);
+
+	Activity.update({ _id: req.body.activityId }, 
+		{ checkInTime : checkInTime }, function(err, numAffected) {
+		if (err) {
+			return res.json({ 
+				success: false, 
+				message: 'Error updating activity: ' + err
+			});
+		} else {
+		  	console.log('Activity updated!');
+
+			return res.json({ 
+				success: true, 
+				message: 'Activity updated successfully!',
+			});
+		}
+	});
+});
+
+// delete activity by activity id
+apiRouter.post('/activities/delete/:activity_id', function(req, res) { 
+	
+	console.log('got a delete request for a car activity');
+	console.log(req.body.activityId);
+	console.log(req.body.checkInTime);
+
+	// delete the activity
+	Activity.remove({ _id: req.body.activityId }, function(err) {
+		if (err) {
+			return res.json({ 
+				success: false, 
+				message: 'Error deleting activity: ' + err
+			});
+		} else {
+		  	console.log('Activity deleted!');
+
+			return res.json({ 
+				success: true, 
+				message: 'Activity deleted successfully!',
+			});
+		}
+	});
+
 // register the routes to the /api directory
 server.use('/api', apiRouter);
 server.use('/', staticRouter);
@@ -436,5 +486,3 @@ server.use('/', staticRouter);
 server.listen(config.port || 9804, function () {
     console.log("Server started @ ", config.port || 9804);
 });
-
-

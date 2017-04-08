@@ -217,6 +217,36 @@ apiRouter.get('/users/email/:email', function(req, res){
 	});
 });
 
+//update the user
+apiRouter.post('/users/update', function(req, res) {
+	console.log(req.body.email)
+	console.log(req.body.name)
+
+	User.update(
+	{
+		// the query to get which user we want
+		email : req.body.email	
+	},
+	{	
+		// setting the parameters
+		name : req.body.name,
+		phonenumber : req.body.phonenumber,
+		profile_picture : req.body.profile_picture
+
+	}, function(err, numAffected) {
+		if (err) {
+			return res.json({
+				success : false,
+				message : err
+			});
+		} else {
+			return res.json({
+				success : true,
+				message : numAffected
+			});
+		}
+	});
+});
 //car routes
 
 // create a new car

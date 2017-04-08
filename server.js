@@ -201,7 +201,7 @@ apiRouter.get('/users/:user_id', function(req, res){
 	});
 });
 
-// get user by
+// get user by email
 apiRouter.get('/users/email/:email', function(req, res){
 	console.log(req.params.email);
 

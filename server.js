@@ -89,7 +89,7 @@ apiRouter.post('/users', function(req, res){
 		res.json({ 
 			success: true, 
 			message: 'User created successfully!',
-			token: token
+			jwt: token
 		});
 	});
 });

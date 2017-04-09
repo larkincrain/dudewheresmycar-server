@@ -470,7 +470,7 @@ apiRouter.get('/activities/:car_id', function(req, res) {
 });
 
 // update activity by activity id
-apiRouter.post('/activities/update/:activity_id', function(req, res) { 
+apiRouter.post('/activities/update', function(req, res) { 
 	
 	console.log('got an update request for a car activity');
 	console.log(req.body.activityId);
@@ -495,7 +495,7 @@ apiRouter.post('/activities/update/:activity_id', function(req, res) {
 });
 
 // delete activity by activity id
-apiRouter.post('/activities/delete/:activity_id', function(req, res) { 
+apiRouter.post('/activities/delete', function(req, res) { 
 	
 	console.log('got a delete request for a car activity');
 	console.log(req.body.activityId);

@@ -327,6 +327,37 @@ apiRouter.get('/cars/:car_id', function(req, res) {
 	});	
 });
 
+// update a car by id 
+apiRouter.post('/cars/update/:car_id', function(req, res) {
+	console.log(req.params.car_id)
+
+	Car.update(
+	{
+		// the query to get which user we want
+		_id : req.params.car_id	
+	},
+	{	
+		// setting the parameters
+		name : req.body.name,
+		description : req.body.description,
+		seats :  req.body.seats,
+		profile_picture : req.body.profile_picture
+
+	}, function(err, numAffected) {
+		if (err) {
+			return res.json({
+				success : false,
+				message : err
+			});
+		} else {
+			return res.json({
+				success : true,
+				message : numAffected
+			});
+		}
+	});
+});
+
 // activity routes
 
 // create a new activity
@@ -468,7 +499,6 @@ apiRouter.post('/activities/delete/:activity_id', function(req, res) {
 	
 	console.log('got a delete request for a car activity');
 	console.log(req.body.activityId);
-	console.log(req.body.checkInTime);
 
 	// delete the activity
 	Activity.remove({ _id: req.body.activityId }, function(err) {

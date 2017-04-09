@@ -125,7 +125,7 @@ apiRouter.post('/authenticate', function(req, res){
 					
 					//authenticate has worked, now we need to return a JWT
 					var token = jwt.sign(user, config.auth.secret, {
-						expiresIn: '24h' 
+						expiresIn: '7d' 
 					});
 
 					console.log('token');

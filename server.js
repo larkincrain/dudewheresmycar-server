@@ -474,9 +474,10 @@ apiRouter.post('/activities/update', function(req, res) {
 	
 	console.log('got an update request for a car activity');
 	console.log(req.body.activityId);
+	console.log(req.body.checkInTime);
 
 	Activity.update({ _id: req.body.activityId }, 
-		{ checkInTime : req.body.checkInTime }, function(err, numAffected) {
+		{ check_in_time : req.body.checkInTime }, function(err, numAffected) {
 		if (err) {
 			return res.json({ 
 				success: false, 

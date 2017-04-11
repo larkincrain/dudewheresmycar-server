@@ -466,7 +466,7 @@ apiRouter.get('/activities/:car_id', function(req, res) {
 
 		//return the array in json form
 		res.json(activities);
-	});
+	}).populate('user');
 });
 
 // update activity by activity id

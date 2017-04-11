@@ -364,11 +364,11 @@ apiRouter.post('/cars/update/:car_id', function(req, res) {
 apiRouter.post('/activities', function(req, res) { 
 	
 	//get the users
-	User.find({ email : req.body.email }, function(err, users) {
+	User.findOne({ email : req.body.email }, function(err, user) {
 		if (err) throw err;
 
-		if(!users || users.length != 1) {
-			return res.json({ message: 'Multiple users exist for this email'});
+		if(!user) {
+			return res.json({ message: 'User not found'});
 		}
 
 		// get the activities by car id
@@ -414,7 +414,7 @@ apiRouter.post('/activities', function(req, res) {
 
 			// create a new activity
 			var newActivity = Activity({
-				user : users[0]._id,
+				user : user._id,
 				car : req.body.carId,
 				check_out_time : req.body.checkOutTime,
 				check_in_time_expected : req.body.checkInTimeExpected,
@@ -449,7 +449,7 @@ apiRouter.get('/activities', function(req, res) {
 
 		//return the array in json form
 		res.json(activities);
-	});
+	}).populate('user', {email: 'email', profile_picture: 'profile_picture'});
 
 	//todo populate user & car?
 });

@@ -124,7 +124,7 @@ apiRouter.post('/authenticate', function(req, res){
 				if(bcrypt.compareSync(req.body.password, user.password)){
 					
 					//authenticate has worked, now we need to return a JWT
-					var token = jwt.sign(user, config.auth.secret, {
+					var token = jwt.sign(user.email, config.auth.secret, {
 						expiresIn: '7d' 
 					});
 

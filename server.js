@@ -414,7 +414,7 @@ apiRouter.post('/activities', function(req, res) {
 
 			// create a new activity
 			var newActivity = Activity({
-				user : users[0].userId,
+				user : users[0]._id,
 				car : req.body.carId,
 				check_out_time : req.body.checkOutTime,
 				check_in_time_expected : req.body.checkInTimeExpected,

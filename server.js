@@ -449,7 +449,7 @@ apiRouter.get('/activities', function(req, res) {
 
 		//return the array in json form
 		res.json(activities);
-	}).populate('user', {email: 'email', name: 'name', profile_picture: 'profile_picture'});
+	}).populate('user', {email: 'email', profile_picture: 'profile_picture'});
 
 	//todo populate user & car?
 });
@@ -466,7 +466,7 @@ apiRouter.get('/activities/:car_id', function(req, res) {
 
 		//return the array in json form
 		res.json(activities);
-	}).populate('user', {email: 'email', name: 'name', profile_picture: 'profile_picture'});
+	}).populate('user', {email: 'email', profile_picture: 'profile_picture'});
 });
 
 // update activity by activity id

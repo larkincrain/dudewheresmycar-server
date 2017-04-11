@@ -58,38 +58,51 @@ apiRouter.get('/', function(req, res) {
 
 // create a new user
 apiRouter.post('/users', function(req, res){
-	// create a new user
-	var newUser = User({
-	  name: req.body.name,
-	  email: req.body.email,
-	  password: req.body.password,
-	  profile_picture: req.body.profile_picture,
-	  admin: req.body.admin,
-	});
 
-	//we only want to save the encrypted user's password
-	newUser.password = bcrypt.hashSync(newUser.password);
+	//let's check for users by email
+	User.find({ email: req.body.email}, function(err, users) {
+		if (err) throw err;
 
-	// save the user
-	newUser.save(function(err) {
-		if (err) {
+		if(users != null && users.length > 0){
 			return res.json({ 
 				success: false, 
-				message: 'Error saving user: ' + err
+				message: 'Duplicate user:' + req.body.email
 			});
-		} 
+		}
 
-	  	console.log('User created!');
-
-		// now let's create a token for them!
-		var token = jwt.sign(newUser, config.auth.secret, {
-			expiresIn: '24h'
+		// create a new user
+		var newUser = User({
+		  name: req.body.name,
+		  email: req.body.email,
+		  password: req.body.password,
+		  profile_picture: req.body.profile_picture,
+		  admin: req.body.admin,
 		});
 
-		res.json({ 
-			success: true, 
-			message: 'User created successfully!',
-			jwt: token
+		//we only want to save the encrypted user's password
+		newUser.password = bcrypt.hashSync(newUser.password);
+
+		// save the user
+		newUser.save(function(err) {
+			if (err) {
+				return res.json({ 
+					success: false, 
+					message: 'Error saving user: ' + err
+				});
+			} 
+
+		  	console.log('User created!');
+
+			// now let's create a token for them!
+			var token = jwt.sign(newUser, config.auth.secret, {
+				expiresIn: '24h'
+			});
+
+			res.json({ 
+				success: true, 
+				message: 'User created successfully!',
+				jwt: token
+			});
 		});
 	});
 });

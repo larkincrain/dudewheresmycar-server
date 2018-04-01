@@ -2,15 +2,16 @@ var express  = require('express'),
     mongoose = require('mongoose'),
     bodyParser = require('body-parser')
     config = require('./config.js'),
-	morgan = require('morgan'),
-	bcrypt = require('bcrypt-nodejs'),
-	jwt = require('jsonwebtoken'),
-	cors = require('cors'),
-	moment = require('moment');
+	  morgan = require('morgan'),
+    bcrypt = require('bcrypt-nodejs'),
+    jwt = require('jsonwebtoken'),
+    cors = require('cors'),
+    moment = require('moment');
 
 var server = express();
 server.use(bodyParser.urlencoded({ extended: true, limit: '5mb' }));
 server.use(bodyParser.json({ limit: '5mb'}));
+
 //server.use(bodyParser.urlencoded({ limit: '5mb'}));
 server.use(morgan('dev')); // LOGGER
 
@@ -24,25 +25,24 @@ mongoose.connect( config.database.connectionURI, function (error) {
 });
 
 // lets load the models
-var Car        	= require('./car');
+var Car       = require('./car');
 var User     	= require('./user');
-var Activity 	= require('./activity');    
+var Activity 	= require('./activity');
 
 // static routes
 var staticRouter = express.Router();
 
 server.use(function(req, res, next) {
 	res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
 
-    next();
+  next();
 });
 
 server.use(cors());
 
 server.get('/', function(req, res) {
-	
     res.send('Hello! The API is at http://localhost:' + config.port + '/api');
 });
 
@@ -51,7 +51,7 @@ var apiRouter = express.Router();              // get an instance of the express
 
 apiRouter.get('/', function(req, res) {
 
-    res.json({ message: 'hooray! welcome to our api!' });   
+    res.json({ message: 'hooray! welcome to our api!' });
 });
 
 // user routes
@@ -64,9 +64,9 @@ apiRouter.post('/users', function(req, res){
 		if (err) throw err;
 
 		if(users != null && users.length > 0){
-			return res.json({ 
-				success: false, 
-				message: 'Duplicate user:' + req.body.email
+			return res.json({
+				success: false,
+				message: 'Duplicate user'
 			});
 		}
 
@@ -85,11 +85,11 @@ apiRouter.post('/users', function(req, res){
 		// save the user
 		newUser.save(function(err) {
 			if (err) {
-				return res.json({ 
-					success: false, 
+				return res.json({
+					success: false,
 					message: 'Error saving user: ' + err
 				});
-			} 
+			}
 
 		  	console.log('User created!');
 
@@ -98,8 +98,8 @@ apiRouter.post('/users', function(req, res){
 				expiresIn: '24h'
 			});
 
-			res.json({ 
-				success: true, 
+			res.json({
+				success: true,
 				message: 'User created successfully!',
 				jwt: token
 			});
@@ -109,7 +109,7 @@ apiRouter.post('/users', function(req, res){
 
 // authenticate a user
 apiRouter.post('/authenticate', function(req, res){
-	
+
 	//debugging
 	console.log('email: ' + req.body.email);
 	console.log('password: ' + req.body.password);
@@ -118,29 +118,29 @@ apiRouter.post('/authenticate', function(req, res){
 	User.findOne({ email: req.body.email },
 		function(err, user){
 			if (err){
-				res.json({ 
+				res.json({
 					message: 'Error occured: ' + err,
 					success: false
 				});
 			}
 
 			if (!user) {
-				res.json({ 
+				res.json({
 					message: 'User doesnt exist',
 					success: false
-				});	
-			} else {			
+				});
+			} else {
 				console.log('user exists');
 				console.log(user.email);
 
 				//cool. we have a user found, but now we need to check their password
 				if(bcrypt.compareSync(req.body.password, user.password)){
-					
+
 					//authenticate has worked, now we need to return a JWT
 					var token = jwt.sign(
-						{email : user.email}, 
+						{email : user.email},
 						config.auth.secret, {
-							expiresIn: '7d' 
+							expiresIn: '7d'
 						}
 					);
 
@@ -156,8 +156,8 @@ apiRouter.post('/authenticate', function(req, res){
 
 				} else {
 					//wrong password
-					res.json({ 
-						message: 'Incorrect password.', 
+					res.json({
+						message: 'Incorrect password.',
 						success: false
 					});
 				}
@@ -178,7 +178,7 @@ apiRouter.use( function(req, res, next){
 	if (token) {
 		jwt.verify(token, config.auth.secret, function(err, decoded) {
 			if (err) {
-				return res.json({ 
+				return res.json({
 					message: 'Failed to authenticate token.',
 					success: false
 				});
@@ -230,7 +230,7 @@ apiRouter.get('/users/email/:email', function(req, res){
 	console.log(req.params.email);
 
 	User.find(
-	{ email : req.params.email }, 
+	{ email : req.params.email },
 	function(err, user){
 
 		if (err) {
@@ -249,9 +249,9 @@ apiRouter.post('/users/update', function(req, res) {
 	User.update(
 	{
 		// the query to get which user we want
-		email : req.body.email	
+		email : req.body.email
 	},
-	{	
+	{
 		// setting the parameters
 		name : req.body.name,
 		phonenumber : req.body.phonenumber,
@@ -275,7 +275,7 @@ apiRouter.post('/users/update', function(req, res) {
 //car routes
 
 // create a new car
-apiRouter.post('/cars', function(req, res) { 
+apiRouter.post('/cars', function(req, res) {
 	// create a new user
 	var newCar = Car({
 		name: req.body.name,
@@ -287,23 +287,23 @@ apiRouter.post('/cars', function(req, res) {
 	// save the user
 	newCar.save(function(err) {
 		if (err) {
-			return res.json({ 
-				success: false, 
+			return res.json({
+				success: false,
 				message: 'Error saving car: ' + err
 			});
-		} 
+		}
 
 	  	console.log('Car created!');
 
-		res.json({ 
-			success: true, 
+		res.json({
+			success: true,
 			message: 'Car created successfully!',
 		});
 	});
 });
 
 // get all cars
-apiRouter.get('/cars', function(req, res) { 
+apiRouter.get('/cars', function(req, res) {
 	//let's display all the cars
 	Car.find({}, function(err, cars) {
 		if (err) throw err;
@@ -329,7 +329,7 @@ apiRouter.get('/cars/:car_id', function(req, res) {
 			var twoDaysAgo = moment(req.query.date).subtract(2, 'days');
 
 			activities.forEach(function(activity) {
-				if (activity.check_out_time.getTime() > twoDaysAgo.valueOf() || 
+				if (activity.check_out_time.getTime() > twoDaysAgo.valueOf() ||
 					// TODO activity.check_in_time.getTime() > twoDaysAgo.valueOf() ||
 					activity.check_in_time_expected.getTime() > twoDaysAgo.valueOf())
 					filteredActivities[filteredActivities.length] = activity;
@@ -340,19 +340,19 @@ apiRouter.get('/cars/:car_id', function(req, res) {
 				filteredActivities : filteredActivities
 			});
 		});
-	});	
+	});
 });
 
-// update a car by id 
+// update a car by id
 apiRouter.post('/cars/update/:car_id', function(req, res) {
 	console.log(req.params.car_id)
 
 	Car.update(
 	{
 		// the query to get which user we want
-		_id : req.params.car_id	
+		_id : req.params.car_id
 	},
-	{	
+	{
 		// setting the parameters
 		name : req.body.name,
 		description : req.body.description,
@@ -377,8 +377,8 @@ apiRouter.post('/cars/update/:car_id', function(req, res) {
 // activity routes
 
 // create a new activity
-apiRouter.post('/activities', function(req, res) { 
-	
+apiRouter.post('/activities', function(req, res) {
+
 	//get the users
 	User.findOne({ email : req.body.email }, function(err, user) {
 		if (err) throw err;
@@ -390,7 +390,7 @@ apiRouter.post('/activities', function(req, res) {
 		// get the activities by car id
 		Activity.find({ car : req.body.carId }, function(err, activities) {
 			var overlappingActivities = [];
-			
+
 			var proposedCheckOutTime = moment(req.body.checkOutTime);
 			var proposedCheckInTimeExpected = moment(req.body.checkInTimeExpected);
 
@@ -440,15 +440,15 @@ apiRouter.post('/activities', function(req, res) {
 			// save the activity
 			newActivity.save(function(err) {
 				if (err) {
-					return res.json({ 
-						success: false, 
+					return res.json({
+						success: false,
 						message: 'Error saving activity: ' + err
 					});
 				} else {
 				  	console.log('Activity created!');
 
-					return res.json({ 
-						success: true, 
+					return res.json({
+						success: true,
 						message: 'Activity created successfully!',
 					});
 				}
@@ -458,7 +458,7 @@ apiRouter.post('/activities', function(req, res) {
 });
 
 // get all activities
-apiRouter.get('/activities', function(req, res) { 
+apiRouter.get('/activities', function(req, res) {
 	//let's display all the activities
 	Activity.find({}, function(err, activities) {
 		if (err) throw err;
@@ -471,8 +471,8 @@ apiRouter.get('/activities', function(req, res) {
 });
 
 // get activities by car id
-apiRouter.get('/activities/:car_id', function(req, res) { 
-	
+apiRouter.get('/activities/:car_id', function(req, res) {
+
 	console.log('got a get request for car activities');
 	console.log(req.params.car_id);
 
@@ -486,24 +486,24 @@ apiRouter.get('/activities/:car_id', function(req, res) {
 });
 
 // update activity by activity id
-apiRouter.post('/activities/update', function(req, res) { 
-	
+apiRouter.post('/activities/update', function(req, res) {
+
 	console.log('got an update request for a car activity');
 	console.log(req.body.activityId);
 	console.log(req.body.checkInTime);
 
-	Activity.update({ _id: req.body.activityId }, 
+	Activity.update({ _id: req.body.activityId },
 		{ check_in_time : req.body.checkInTime }, function(err, numAffected) {
 		if (err) {
-			return res.json({ 
-				success: false, 
+			return res.json({
+				success: false,
 				message: 'Error updating activity: ' + err
 			});
 		} else {
 		  	console.log('Activity updated!');
 
-			return res.json({ 
-				success: true, 
+			return res.json({
+				success: true,
 				message: 'Activity updated successfully!',
 			});
 		}
@@ -511,23 +511,23 @@ apiRouter.post('/activities/update', function(req, res) {
 });
 
 // delete activity by activity id
-apiRouter.post('/activities/delete', function(req, res) { 
-	
+apiRouter.post('/activities/delete', function(req, res) {
+
 	console.log('got a delete request for a car activity');
 	console.log(req.body.activityId);
 
 	// delete the activity
 	Activity.remove({ _id: req.body.activityId }, function(err) {
 		if (err) {
-			return res.json({ 
-				success: false, 
+			return res.json({
+				success: false,
 				message: 'Error deleting activity: ' + err
 			});
 		} else {
 		  	console.log('Activity deleted!');
 
-			return res.json({ 
-				success: true, 
+			return res.json({
+				success: true,
 				message: 'Activity deleted successfully!',
 			});
 		}

@@ -43,15 +43,15 @@ server.use(function(req, res, next) {
 server.use(cors());
 
 server.get('/', function(req, res) {
-    res.send('Hello! The API is at http://localhost:' + config.port + '/api');
+  res.send('Hello! The API is at http://localhost:' + config.port + '/api');
 });
 
 // api routes
-var apiRouter = express.Router();              // get an instance of the express Router
+// get an instance of the express Router
+var apiRouter = express.Router();
 
 apiRouter.get('/', function(req, res) {
-
-    res.json({ message: 'hooray! welcome to our api!' });
+  res.json({ message: 'hooray! welcome to our api!' });
 });
 
 // user routes

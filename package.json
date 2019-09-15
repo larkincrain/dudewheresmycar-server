@@ -9,7 +9,7 @@
     "fs": "latest",
     "jsonwebtoken": "latest",
     "lodash": "latest",
-    "method-override": "~2.0.2",
+    "method-override": ">=2.3.10",
     "moment": "^2.18.1",
     "mongoose": "~3.8.0",
     "morgan": "latest",

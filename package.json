@@ -11,7 +11,7 @@
     "lodash": "latest",
     "method-override": ">=2.3.10",
     "moment": "^2.18.1",
-    "mongoose": "~3.8.0",
+    "mongoose": "~5.7.5",
     "morgan": "latest",
     "serve-static": "latest"
   }

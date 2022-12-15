@@ -5,7 +5,7 @@
     "bcrypt-nodejs": "latest",
     "body-parser": "~1.4.2",
     "cors": "latest",
-    "express": "~4.5.1",
+    "express": "~4.17.3",
     "fs": "latest",
     "jsonwebtoken": "latest",
     "lodash": "latest",

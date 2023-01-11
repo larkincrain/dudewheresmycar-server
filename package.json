@@ -5,13 +5,13 @@
     "bcrypt-nodejs": "latest",
     "body-parser": "~1.4.2",
     "cors": "latest",
-    "express": "~4.5.1",
+    "express": "~4.18.2",
     "fs": "latest",
     "jsonwebtoken": "latest",
     "lodash": "latest",
     "method-override": ">=2.3.10",
     "moment": "^2.18.1",
-    "mongoose": "~3.8.0",
+    "mongoose": "~6.8.3",
     "morgan": "latest",
     "serve-static": "latest"
   }
